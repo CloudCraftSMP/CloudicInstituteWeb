@@ -1,17 +1,17 @@
 var options = {
     strings: [
-        'Piilve Statsmitoimist', // Cloudic (Latin)
-        'Пиилвэ Статсмитоимист', // Cloudic (Cyrillic)
-        'CloudCraftin hallitus', // Finnish
-        'CloudCraft-regjeringen', // Norwegian
-        'CloudCraft ríkisstjórn', // Icelandic
-        'CloudCraftap naalagaassuseqa',
-        'CloudCraftaid Ráđđehus', // Northern Sámi
-        'CloudCraftin abuniekkut', // Karelian
-        'CloudCrafti valitsus', // Estonian
-        'Oficina Gubernamental de CloudCraft', // Spanish
-        'Escritório do Governo da CloudCraft', // Portugese
-        'Oifig Rialtais CloudCraft', // Irish Gaelic
+        'Institüüt að Pilvea Kie', // Cloudic (Latin)
+        'Институт аж Пилвэа Щиэ', // Cloudic (Cyrillic)
+        'Pilvikielen sääntelylaitos', // Finnish
+        'Skyspråkreguleringsinstitusjon', // Norwegian
+        'Skýjamálaeftirlitsstofnun', // Icelandic
+        //'CloudCraftap naalagaassuseqa',
+        //'CloudCraftaid Ráđđehus', // Northern Sámi
+        //'CloudCraftin abuniekkut', // Karelian
+        'Pilvekeele Reguleerimise Asutus', // Estonian
+        'Institución de Regulación del Lenguaje en la Nube', // Spanish
+        'Instituição Reguladora de Idiomas na Nuvem', // Portugese
+        'Institiúid Rialála Teanga Scamall', // Irish Gaelic
     ],
     typeSpeed: 40,
     backSpeed: 50,
