@@ -9,8 +9,8 @@ var options = {
         //'CloudCraftaid Ráđđehus', // Northern Sámi
         //'CloudCraftin abuniekkut', // Karelian
         'Pilvekeele Reguleerimise Asutus', // Estonian
-        'Institución de Regulación del Lenguaje en la Nube', // Spanish
-        'Instituição Reguladora de Idiomas na Nuvem', // Portugese
+        'Institución de Regulación del Lenguaje de la Nube', // Spanish
+        'Instituição Reguladora de Idiomas de Nuvem', // Portugese
         'Institiúid Rialála Teanga Scamall', // Irish Gaelic
     ],
     typeSpeed: 40,

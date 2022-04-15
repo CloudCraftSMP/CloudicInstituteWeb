@@ -36,24 +36,12 @@ app.get("/", function (req, res) {
     res.render("index", { pageTitle: "Home" });
 });
 
-app.get("/government/how-government-works", function (req, res) {
-    res.render("government/how-government-works", { pageTitle: "How government works" });
+app.get("/learn", function (req, res) {
+    res.render("learn/index", { pageTitle: "Learn Cloudic" });
 });
 
-app.get("/government/who-represents-me", function (req, res) {
-    res.render("government/who-represents-me", { pageTitle: "Who represents me?" });
-});
-
-app.get("/government/behind-the-scenes", function (req, res) {
-    res.render("government/behind-the-scenes", { pageTitle: "Behind the scenes" });
-});
-
-app.get("/government/elections", function (req, res) {
-    res.render("government/elections", { pageTitle: "Presidential elections" });
-});
-
-app.get("/forms/sd01", function (req, res) {
-    res.render("forms/sd01", { pageTitle: "Declaration of Intent (SD01)" });
+app.get("/learn/alphabet", function (req, res) {
+  res.render("learn/alphabet", { pageTitle: "Alphabet • Learn Cloudic" });
 });
 
 app.post("/forms/sd01", function (req, res) {
