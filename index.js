@@ -15,6 +15,8 @@ app.set("views", `${__dirname}/views`);
 app.set("view engine", "mustache");
 app.engine("mustache", mustacheExpress());
 
+app.use(express.json());
+
 const transporter = nodemailer.createTransport({
     host: "smtp.sendgrid.net",
     port: 25,
@@ -44,60 +46,10 @@ app.get("/learn/alphabet", function (req, res) {
   res.render("learn/alphabet", { pageTitle: "Alphabet • Learn Cloudic" });
 });
 
-app.post("/forms/sd01", function (req, res) {
-
-    let ts = Date.now();
-
-    let date_ob = new Date(ts);
-    let date = date_ob.getDate();
-    let month = date_ob.getMonth() + 1;
-    let year = date_ob.getFullYear();
-
-    // prints date & time in YYYY-MM-DD format
-    console.log(year + "-" + month + "-" + date);
-
-  //1.
-  let form = new multiparty.Form();
-  let data = {};
-  form.parse(req, function (err, fields) {
-    console.log(fields);
-    Object.keys(fields).forEach(function (property) {
-      data[property] = fields[property].toString();
-    });
-
-    //2. You can configure the object however you want
-    const mail = {
-      from: 'Form Submissions <noreply@cloudcraft.fi>',
-      to: 'overseers@cloudcraft.fi',
-      cc: 'dandabs@cloudcraft.fi',
-      subject: 'SD01: ' + data.minecraft,
-      priority: 'high',
-      text: `SD01 from ${data.minecraft} | ${data.discord}.
-Primary election color: ${data.color}.
-Primary election animal: ${data.animal}.
-Primary flag(s): ${data.flag}.
-Mother tongue: ${data.language}\n
-Why do you want to become president?\n${data.whydoyouwant}.\n
-What is an important issue on CC, and how would you propose to solve it?\n${data.importantissue}.\n
-What's something you'd like to see implemented on CloudCraft?\n${data.newfeature}.\n
-Form submitted at ${date + "/" + month + "/" + year}.`,
-    };
-
-    //3.
-    transporter.sendMail(mail, (err, data) => {
-      if (err) {
-        console.log(err);
-        res.status(500).send("Something went wrong.");
-      } else {
-        //res.status(200).send("Email successfully sent to recipient!");
-        res.render("forms/sd01-sent", { pageTitle: "Declaration of Intent (SD01)" });
-      }
-    });
-  });
-});
-
 app.use("/cdn", express.static("content"));
 app.use("/cdn/bootstrap", express.static("node_modules/bootstrap/dist"));
+
+app.use('/api', require('./routes/api'));
 
 app.get('*', function(req, res){
     res.status(404).send('what???');
