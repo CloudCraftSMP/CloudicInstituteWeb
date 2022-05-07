@@ -1079,7 +1079,7 @@ router.post("/en-cl/translate", async (req, res) => {
     const originalText     = req.body.text.toLowerCase();
     const cleanedText      = originalText.replace(/[.,!?()]/g, '');
     //const cTA              = cleanedText.split(' ').filter(function(i) { return i != 'the' });
-    const sentences        = originalText.split(/(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s/g); // split into sentences
+    const sentences        = originalText.split(/(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?|and|so|but|because|although|or|for)\s/g); // split into sentences
     var finalText          = req.body.text.toLowerCase().replace(/( the )|(the )|( the)/g, " ")
                                                         .replace(/( i'm )/g, ' i am ')
                                                         .replace(/( you're )/g, ' you are ')
@@ -1108,6 +1108,8 @@ router.post("/en-cl/translate", async (req, res) => {
                 || original == "an") return;
     
             if (original == "of" && cTA[i - 1] == "out") return finalText = finalText.replaceAll('out of', 'frá');
+
+            if (original == "of") return finalText = finalText.replaceAll('of', 'að');
     
             // prepositions
             if (original == "and") return finalText = finalText.replaceAll(original, 'og');
