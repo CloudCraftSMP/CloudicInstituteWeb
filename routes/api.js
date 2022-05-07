@@ -958,8 +958,7 @@ router.post("/en-cl/translate", async (req, res) => {
             //if (original == "is") return finalText = finalText.replaceAll(original, 'e');
             //if (original == "am") return finalText = finalText.replaceAll(original, 'e');
     
-            var type = "noun";
-            if (new String(original).endsWith("ing")) type = "verb";
+            var type = "verb";
     
             // DO NOT USE IF ELSE STATEMENTS SO THE TYPE CAN BE CHANGED TO NOUN IF VERB ETC. ISNT FOUND IN THE TABLE
             if (type == "verb") {
@@ -967,8 +966,8 @@ router.post("/en-cl/translate", async (req, res) => {
     
                 word = await new Promise((resolve) => {
                     sql.query(
-                        "SELECT * FROM `CL_VERB` WHERE en_past=? OR en_pres=? OR en_futu",
-                        [original, original],
+                        "SELECT * FROM `CL_VERB` WHERE en_past=? OR en_pres=? OR en_futu=?",
+                        [original, original, original],
                         async (error, rows) => {
                             if (error) return res.status(500).send(error);
                             if (rows.length == 0) return resolve(null);
@@ -984,7 +983,7 @@ router.post("/en-cl/translate", async (req, res) => {
             });
     
             if (word == null) {
-                type = "noun";
+                type = "adjective";
                 word = original;
             } else {
                 var conjTable = await axios.post(`http://localhost:${require('../config.json').port}/api/cl/decline`, { word: word, type: "ver", tense: tense });
@@ -1005,6 +1004,37 @@ router.post("/en-cl/translate", async (req, res) => {
                 preAccusative.push(i);
             }
     
+            }
+
+            if (type == "adjective") {
+                var acase = "affirmative";
+
+                word = await new Promise((resolve) => {
+                    sql.query(
+                        "SELECT * FROM `CL_ADJ` WHERE en_affi=? OR en_comp=? OR en_supe=?",
+                        [original, original, original],
+                        async (error, rows) => {
+                            if (error) return res.status(500).send(error);
+                            if (rows.length == 0) return resolve(null);
+    
+                            if (rows[0].en_affi == original) acase = "affirmative";
+                            if (rows[0].en_comp == original) acase = "comparative";
+                            if (rows[0].en_supe == original) acase = "superlative";
+            
+                            resolve(rows[0].cl_stem);
+            
+                        }
+                    );
+                });
+
+                if (word == null) {
+                    type = "noun";
+                    word = original;
+                } else {
+                    var conjTable = await axios.post(`http://localhost:${require('../config.json').port}/api/cl/decline`, { word: word, type: "adj" });
+        
+                    word = conjTable.data.word[acase].latin;
+                }
             }
     
             if (type == "noun") {
