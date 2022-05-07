@@ -1096,6 +1096,13 @@ router.post("/en-cl/translate", async (req, res) => {
                                                         .replace(/( am )/g, ' e ')
                                                         .replace(/( are )/g, ' e ')
                                                         .replace(/( a )/g, ' ')
+                                                        .replace(/( will )/g, ' må ')
+                                                        .replace(/( not )/g, ' ekki ')
+                                                        .replace(/( to )/g, ' til ')
+
+    const json = await csv()
+    .fromStream(require("fs").createReadStream("sampa_ipa_single.csv"));
+                                                        
 
     await asyncForEach(sentences, async (sentence, si) => {
         const cTA = sentence.replace(/[.,!?()]/g, '').split(' ').filter(function(i) { return i != 'the' });
@@ -1150,7 +1157,7 @@ router.post("/en-cl/translate", async (req, res) => {
             }
 
             if (type == "verb") {
-                var tense = "present";
+                var tense = "";
     
                 word = await new Promise((resolve) => {
                     sql.query(
@@ -1186,8 +1193,11 @@ router.post("/en-cl/translate", async (req, res) => {
                 if (cTA[i - 2] == "they") { person = "third"; plural = true; }
     
                 word = conjTable.data.word[plural ? "pl" : "sg"][person].latin;
+
+                if (tense == "future") word = conjTable.data.request.word;
     
                 finalText = finalText.replace("e " + original, word); // replace "is verb" (eng present tense) with "verb"
+                finalText = finalText.replace("til " + original, " þå " + word);
 
                 preAccusative.push(i);
             }
