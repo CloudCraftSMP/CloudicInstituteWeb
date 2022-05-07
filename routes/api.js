@@ -914,7 +914,8 @@ router.post("/en-cl/translate", async (req, res) => {
 
     const originalText     = req.body.text.toLowerCase();
     const cleanedText      = originalText.replace(/[.,!?()]/g, '');
-    const cTA              = cleanedText.split(' ').filter(function(i) { return i != 'the' });
+    //const cTA              = cleanedText.split(' ').filter(function(i) { return i != 'the' });
+    const sentences        = originalText.split(/(?<!\w\.\w.)(?<![A-Z][a-z]\.)(?<=\.|\?)\s/g); // split into sentences
     var finalText          = req.body.text.toLowerCase().replace(/( the )|(the )|( the)/g, " ")
                                                         .replace(/( i'm )/g, ' i am ')
                                                         .replace(/( you're )/g, ' you are ')
@@ -929,91 +930,146 @@ router.post("/en-cl/translate", async (req, res) => {
                                                         .replace(/( at )/g, ' át ')
                                                         .replace(/( is )/g, ' e ')
                                                         .replace(/( am )/g, ' e ')
+                                                        .replace(/( are )/g, ' e ')
                                                         .replace(/( a )/g, ' ')
 
-    await asyncForEach(cTA, async (word, i) => {
-        const original = word;
-        if (original == "the"
-            || original == "a"
-            || original == "an") return;
+    await asyncForEach(sentences, async (sentence, si) => {
+        const cTA = sentence.replace(/[.,!?()]/g, '').split(' ').filter(function(i) { return i != 'the' });
+        var preAccusative = [];
 
-        if (original == "of" && cTA[i - 1] == "out") return finalText = finalText.replaceAll('out of', 'frá');
-
-        // prepositions
-        if (original == "and") return finalText = finalText.replaceAll(original, 'og');
-        if (original == "or") return finalText = finalText.replaceAll(original, 'ella');
-        if (original == "of") return finalText = finalText.replaceAll(original, 'að');
-        if (original == "but") return finalText = finalText.replaceAll(original, 'et');
-        if (original == "because") return finalText = finalText.replaceAll(original, 'vegnä');
-        if (original == "for") return finalText = finalText.replaceAll(original, 'fírir');
-        if (original == "than") return finalText = finalText.replaceAll(original, 'en');
-        if (original == "more") return finalText = finalText.replaceAll(original, 'mér');
-
-        //if (original == "is") return finalText = finalText.replaceAll(original, 'e');
-        //if (original == "am") return finalText = finalText.replaceAll(original, 'e');
-
-        var type = "noun";
-        if (new String(original).endsWith("ing")) type = "verb";
-
-        // DO NOT USE IF ELSE STATEMENTS SO THE TYPE CAN BE CHANGED TO NOUN IF VERB ETC. ISNT FOUND IN THE TABLE
-        if (type == "verb") {
-
-        }
-
-        if (type == "noun") {
-            var plural = false;
-            var possessive = false;
-            var accusative = false;
-            var ncase = "nominative";
+        await asyncForEach(cTA, async (word, i) => {
+            const original = word;
+            if (original == "the"
+                || original == "a"
+                || original == "an") return;
+    
+            if (original == "of" && cTA[i - 1] == "out") return finalText = finalText.replaceAll('out of', 'frá');
+    
+            // prepositions
+            if (original == "and") return finalText = finalText.replaceAll(original, 'og');
+            if (original == "or") return finalText = finalText.replaceAll(original, 'ella');
+            if (original == "of") return finalText = finalText.replaceAll(original, 'að');
+            if (original == "but") return finalText = finalText.replaceAll(original, 'et');
+            if (original == "because") return finalText = finalText.replaceAll(original, 'vegnä');
+            if (original == "for") return finalText = finalText.replaceAll(original, 'fírir');
+            if (original == "than") return finalText = finalText.replaceAll(original, 'en');
+            if (original == "more") return finalText = finalText.replaceAll(original, 'mér');
+    
+            //if (original == "is") return finalText = finalText.replaceAll(original, 'e');
+            //if (original == "am") return finalText = finalText.replaceAll(original, 'e');
+    
+            var type = "noun";
+            if (new String(original).endsWith("ing")) type = "verb";
+    
+            // DO NOT USE IF ELSE STATEMENTS SO THE TYPE CAN BE CHANGED TO NOUN IF VERB ETC. ISNT FOUND IN THE TABLE
+            if (type == "verb") {
+                var tense = "present";
+    
+                word = await new Promise((resolve) => {
+                    sql.query(
+                        "SELECT * FROM `CL_VERB` WHERE en_past=? OR en_pres=? OR en_futu",
+                        [original, original],
+                        async (error, rows) => {
+                            if (error) return res.status(500).send(error);
+                            if (rows.length == 0) return resolve(null);
+    
+                            if (rows[0].en_past == original) tense = "past";
+                            if (rows[0].en_pres == original) tense = "present";
+                            if (rows[0].en_futu == original) tense = "future";
             
-            if (word.endsWith("'s")) { word = word.substring(0, word.length - 2); ncase = "genitive" }
+                            resolve(rows[0].cl_pres);
+            
+                        }
+                    );
+            });
+    
+            if (word == null) {
+                type = "noun";
+                word = original;
+            } else {
+                var conjTable = await axios.post(`http://localhost:${require('../config.json').port}/api/cl/decline`, { word: word, type: "ver", tense: tense });
+    
+                var plural = false;
+                var person = "third";
+    
+                if (cTA[i - 2] == "i" || cTA[i - 1] == "i'm") person = "first";
+                if (cTA[i - 2] == "you" || cTA[i - 1] == "you're") person = "second";
+                if (cTA[i - 2] == "we") { person = "first"; plural = true; }
+                if (cTA[i - 2] == "yall") { person = "second"; plural = true; }
+                if (cTA[i - 2] == "they") { person = "third"; plural = true; }
+    
+                word = conjTable.data.word[plural ? "pl" : "sg"][person].latin;
+    
+                finalText = finalText.replace("e " + original, word); // replace "is verb" (eng present tense) with "verb"
 
-            if (cTA.length > 1 && i > 0) {
-
-                if (['my', 'your', 'his', 'her', 'their', 'our'].includes(cTA[i - 1])) possessive = true;
-                if (cTA[i - 1].endsWith("'s")) possessive = true;
-                console.log(cTA[i - 1]);
-
-                if (cTA[i - 1] == "into") ncase = "illative";
-                if (cTA[i - 1] == "in") ncase = "inessive";
-                if (cTA[i - 1] == "of" || cTA[i - 2] == "out") ncase = "elative";
-
-                if (cTA[i - 1] == "onto") ncase = "allative";
-                if (cTA[i - 1] == "on") ncase = "adessive";
-                if (cTA[i - 1] == "near") ncase = "adessive";
-                if (cTA[i - 1] == "at") ncase = "adessive";
-                if (cTA[i - 1] == "off") ncase = "ablative";
-                if (cTA[i - 1] == "from" && cTA[i - 2] == "away") ncase = "ablative";
-
+                preAccusative.push(i);
             }
+    
+            }
+    
+            if (type == "noun") {
+                var plural = false;
+                var possessive = false;
+                var accusative = false;
+                var ncase = "nominative";
 
-            const preparse = word;
-            
-            word = await new Promise((resolve) => {
-                sql.query(
-                    "SELECT * FROM `CL_NOUN` WHERE en_sg_nom=? OR en_pl_nom=?",
-                    [original, original],
-                    async (error, rows) => {
-                        if (error) return res.status(500).send(error);
-                        if (rows.length == 0) return resolve(null);
-
-                        if (rows[0].en_pl_nom == original) plural = true;
-        
-                        resolve(rows[0].cl_sg_nom);
-        
+                await asyncForEach(preAccusative, async (wi) => {
+                    if (wi < i) { 
+                        ncase = "accusative";
+                        accusative = true;
                     }
-                );
-        });
+                });
+                
+                if (word.endsWith("'s")) { word = word.substring(0, word.length - 2); ncase = "genitive" }
+    
+                if (cTA.length > 1 && i > 0) {
+    
+                    if (['my', 'your', 'his', 'her', 'their', 'our'].includes(cTA[i - 1])) possessive = true;
+                    if (cTA[i - 1].endsWith("'s")) possessive = true;
+                    console.log(cTA[i - 1]);
+    
+                    if (cTA[i - 1] == "into") ncase = "illative";
+                    if (cTA[i - 1] == "in") ncase = "inessive";
+                    if (cTA[i - 1] == "of" || cTA[i - 2] == "out") ncase = "elative";
+    
+                    if (cTA[i - 1] == "onto") ncase = "allative";
+                    if (cTA[i - 1] == "on") ncase = "adessive";
+                    if (cTA[i - 1] == "near") ncase = "adessive";
+                    if (cTA[i - 1] == "at") ncase = "adessive";
+                    if (cTA[i - 1] == "off") ncase = "ablative";
+                    if (cTA[i - 1] == "from" && cTA[i - 2] == "away") ncase = "ablative";
+    
+                }
+    
+                const preparse = word;
+                
+                word = await new Promise((resolve) => {
+                    sql.query(
+                        "SELECT * FROM `CL_NOUN` WHERE en_sg_nom=? OR en_pl_nom=?",
+                        [original, original],
+                        async (error, rows) => {
+                            if (error) return res.status(500).send(error);
+                            if (rows.length == 0) return resolve(null);
+    
+                            if (rows[0].en_pl_nom == original) plural = true;
+            
+                            resolve(rows[0].cl_sg_nom);
+            
+                        }
+                    );
+            });
+    
+            if (word == null) word = preparse;
+            if (accusative && ncase != "accusative") word = word + (endsInVowel(word) ? "r" : "ur");
+            if (possessive) word = word + (endsInVowel(word) ? "ni" : "eni");
+            var conjTable = await axios.post(`http://localhost:${require('../config.json').port}/api/cl/decline`, { word: word, type: "nou" });
+    
+            word = conjTable.data.word[plural ? "pl" : "sg"][ncase].latin;
+            }
+    
+            finalText = finalText.replace(original, word);
+        })
 
-        if (word == null) word = preparse;
-        if (accusative && ncase != "accusative") word = word + (endsInVowel(word) ? "r" : "ur");
-        if (possessive) word = word + (endsInVowel(word) ? "ni" : "eni");
-        var conjTable = await axios.post(`http://localhost:${require('../config.json').port}/api/cl/decline`, { word: word, type: "nou" });
-
-        word = conjTable.data.word[plural ? "pl" : "sg"][ncase].latin;
-        }
-
-        finalText = finalText.replace(original, word);
     })
 
     finalText = finalText.replaceAll("  ", " ")
