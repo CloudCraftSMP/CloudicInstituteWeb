@@ -276,6 +276,8 @@ async function verifyWord(word) {
         word = word.replaceAll('äí', 'æ');
         word = word.replaceAll('aú', 'ú');
 
+        word = word.replaceAll('õ', 'å');
+
         for (i in vowelsList) { // replace double vowels
             const vowel = vowelsList[i];
             word = word.replaceAll(vowel + vowel, vowel + '\u0303');
@@ -909,6 +911,168 @@ router.post("/cl/decline", async (req, res) => {
     return res.status(200).send({ request: req.body, word: final });
 });
 
+function getNumZeroToNine(num) {
+        if (num == 0) return "nótḷ";
+        if (num == 1) return "étt";
+        if (num == 2) return "två";
+        if (num == 3) return "frítt";
+        if (num == 4) return "fjóg";
+        if (num == 5) return "fått";
+        if (num == 6) return "ségga";
+        if (num == 7) return "kjö";
+        if (num == 8) return "átt";
+        if (num == 9) return "ní";
+}
+
+function getPrefixZeroToNine(num) {
+    if (num == 0) return "nótḷ";
+    if (num == 1) return "é";
+    if (num == 2) return "två";
+    if (num == 3) return "frí";
+    if (num == 4) return "fjó";
+    if (num == 5) return "få";
+    if (num == 6) return "sé";
+    if (num == 7) return "kjö";
+    if (num == 8) return "á";
+    if (num == 9) return "ní";
+}
+
+function get0to99(num) {
+    if (num < 20) {
+
+        if (num < 10) return getNumZeroToNine(num);
+        if (num == 10) return "tí";
+
+        if (num == 11) return "étír";
+        if (num == 12) return "tvåtír";
+        if (num == 13) return "frítír";
+        if (num == 14) return "fjótír";
+        if (num == 15) return "fåtír";
+        if (num == 16) return "sétír";
+        if (num == 17) return "kjötír";
+        if (num == 18) return "átír";
+        if (num == 19) return "nítír";
+    } else {
+    var firstDigit = parseInt(new String(num).substring(0, 1));
+    var secondDigit = parseInt(new String(num).substring(1, 2));
+    return getPrefixZeroToNine(firstDigit) + "tí" + (secondDigit == 0 ? "" : getNumZeroToNine(secondDigit));
+    }
+}
+
+function get0to999(num) {
+    if (num < 100) {
+        return get0to99(num);
+    } else {
+        var firstDigit = parseInt(new String(num).substring(0, 1));
+        var lastDigits = parseInt(new String(num).substring(1));
+        return getNumZeroToNine(firstDigit) + "hónra" + (lastDigits == 0 ? "" : " og " + get0to99(lastDigits));
+    }
+}
+
+function get0to9999(num) {
+    if (num < 1000) {
+        return get0to999(num);
+    } else {
+        var firstDigit = parseInt(new String(num).substring(0, 1));
+        var lastDigits = parseInt(new String(num).substring(1));
+        return getNumZeroToNine(firstDigit) + "þysund" + (lastDigits == 0 ? "" : ", " + get0to999(lastDigits));
+    }
+}
+
+function get0to999999(num) {
+    if (num < 10000) {
+        return get0to9999(num);
+    } else {
+        var firstDigit = 0;
+        var lastDigits = 0;
+        switch (new String(num).length) {
+            case 5:
+                firstDigit = parseInt(new String(num).substring(0, 2));
+                lastDigits = parseInt(new String(num).substring(2));
+            case 6:
+                firstDigit = parseInt(new String(num).substring(0, 3));
+                lastDigits = parseInt(new String(num).substring(3));
+        }
+        return get0to999(firstDigit) + " þysund" + (lastDigits == 0 ? "" : ", " + get0to999(lastDigits));
+    }
+}
+
+function get0to999mil(num) {
+    if (num < 1000000) {
+        return get0to999999(num);
+    } else {
+        var firstDigit = 0;
+        var lastDigits = 0;
+        switch (new String(num).length) {
+            case 7:
+                firstDigit = parseInt(new String(num).substring(0, 1));
+                lastDigits = parseInt(new String(num).substring(1));
+            case 8:
+                firstDigit = parseInt(new String(num).substring(0, 2));
+                lastDigits = parseInt(new String(num).substring(2));
+            case 9:
+                firstDigit = parseInt(new String(num).substring(0, 3));
+                lastDigits = parseInt(new String(num).substring(3));
+        }
+        return get0to999(firstDigit) + " míljóna" + (lastDigits == 0 ? "" : ", " + get0to999999(lastDigits));
+    }
+}
+
+router.post("/cl/write-numeral", async (req, res) => {
+    if (!req.body.numeral && req.body.numeral != 0) return res.sendStatus(400);
+    if (isNaN(req.body.numeral)) return res.sendStatus(400);
+    if (req.body.numeral < 0) return res.sendStatus(400);
+
+    var num = req.body.numeral;
+    var final = "";
+
+    if (num < 20) { // 0 - 19 inclusive
+        if (num == 0) final += "nótḷ";
+        if (num == 1) final += "étt";
+        if (num == 2) final += "två";
+        if (num == 3) final += "frítt";
+        if (num == 4) final += "fjóg";
+        if (num == 5) final += "fått";
+        if (num == 6) final += "ségga";
+        if (num == 7) final += "kjö";
+        if (num == 8) final += "áttä";
+        if (num == 9) final += "ní";
+        if (num == 10) final += "tí";
+
+        if (num == 11) final += "étír";
+        if (num == 12) final += "tvåtír";
+        if (num == 13) final += "frítír";
+        if (num == 14) final += "fjótír";
+        if (num == 15) final += "fåtír";
+        if (num == 16) final += "sétír";
+        if (num == 17) final += "kjötír";
+        if (num == 18) final += "átír";
+        if (num == 19) final += "nítír";
+    }
+
+    if (num >= 20 && num <= 99) { // 20-99 inclusive
+        final += get0to99(num);
+    }
+
+    if (num >= 100 && num <= 999) { // 100-999 inclusive
+        final += get0to999(num);
+    }
+
+    if (num >= 1000 && num <= 9999) { // 1000-9999 inclusive
+        final += get0to9999(num);
+    }
+
+    if (num >= 10000 && num <= 999999) { // 10000-999999 inclusive
+        final += get0to999999(num);
+    }
+
+    if (num >= 1000000 && num <= 9999999) { // 1000000-9999999 inclusive
+        final += get0to999mil(num);
+    }
+
+    return res.status(200).send({ request: req.body, word: final });
+});
+
 router.post("/en-cl/translate", async (req, res) => {
     if (!req.body.text) return res.sendStatus(400);
 
@@ -959,8 +1123,30 @@ router.post("/en-cl/translate", async (req, res) => {
             //if (original == "am") return finalText = finalText.replaceAll(original, 'e');
     
             var type = "verb";
+
+            if (original.match(/\d+/g)) type = "numeral";
     
             // DO NOT USE IF ELSE STATEMENTS SO THE TYPE CAN BE CHANGED TO NOUN IF VERB ETC. ISNT FOUND IN THE TABLE
+            if (type == "numeral") {
+                var nucase = "cardinal";
+
+                if (original.match(/[a-zA-Z]/g)) { // if it isn't an ordinal number but contains letters too
+                    if (original.endsWith("th")) nucase = "ordinal";
+                    type = "noun";
+                }
+
+                if (!(original.match(/\D+/g) && !original.match(/(th)|(st)|(nd)|(rd)/g))) { // this will run if the "else" block is chosen from above, or the statement isn't ran at all
+                    console.log(nucase);
+                    var cardinal = nucase == "ordinal" ? original.substring(0, original.length - 2) : original;
+                    console.log(cardinal);
+
+                    var numeral = await axios.post(`http://localhost:${require('../config.json').port}/api/cl/write-numeral`, { numeral: cardinal });
+                    var conjTable = await axios.post(`http://localhost:${require('../config.json').port}/api/cl/decline`, { word: numeral.data.word, type: "num" });
+
+                    word = conjTable.data.word[nucase].latin;
+                }
+            }
+
             if (type == "verb") {
                 var tense = "present";
     
@@ -1028,12 +1214,26 @@ router.post("/en-cl/translate", async (req, res) => {
                 });
 
                 if (word == null) {
-                    type = "noun";
+                    type = "pronoun";
                     word = original;
                 } else {
                     var conjTable = await axios.post(`http://localhost:${require('../config.json').port}/api/cl/decline`, { word: word, type: "adj" });
         
                     word = conjTable.data.word[acase].latin;
+                }
+            }
+
+            if (type == "pronoun") {
+                if (['my', 'your', 'his', 'her', 'our', 'yalls', 'their'].includes(original)) {
+                    if (original == 'my')    word = 'mína';
+                    if (original == 'your')  word = 'þína';
+                    if (original == 'his')   word = 'sína';
+                    if (original == 'her')   word = 'sína';
+                    if (original == 'our')   word = 'mínu';
+                    if (original == 'yalls') word = 'þínu';
+                    if (original == 'their') word = 'hínu';
+                } else {
+                    type = "noun";
                 }
             }
     
