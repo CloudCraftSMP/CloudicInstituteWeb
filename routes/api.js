@@ -644,7 +644,7 @@ router.post("/cl/decline", async (req, res) => {
 
         // calculate singular accusative
         var wordPAcc = word;
-        if (endsInVowel(word)) { wordPAcc = wordPAcc + wordPAcc[wordPAcc.length - 1] + "r"; } else { wordPAcc = wordPAcc + "ur" }
+        if (endsInVowel(word)) { wordPAcc = wordPAcc.substring(0, wordPAcc.length - 1) + "ur"; } else { wordPAcc = wordPAcc + "ur" }
         final.sg.accusative = {
             latin: await verifyWord(wordPAcc),
             cyrillic: await latinToCyrillic(await verifyWord(wordPAcc)),
@@ -1075,6 +1075,7 @@ router.post("/cl/write-numeral", async (req, res) => {
 
 router.post("/en-cl/translate", async (req, res) => {
     if (!req.body.text) return res.sendStatus(400);
+    if (req.body.text.includes(' i ')) return res.status(400).send({"error": "You must not include the word 'I' in your translation text. Consider replacing with 'me'."});
 
     const originalText     = req.body.text.toLowerCase();
     const cleanedText      = originalText.replace(/[.,!?()]/g, '');
@@ -1096,7 +1097,7 @@ router.post("/en-cl/translate", async (req, res) => {
                                                         .replace(/( am )/g, ' e ')
                                                         .replace(/( are )/g, ' e ')
                                                         .replace(/( a )/g, ' ')
-                                                        .replace(/( will )/g, ' må ')
+                                                        .replace(/( will )/g, ' mun ')
                                                         .replace(/( not )/g, ' ekki ')
                                                         .replace(/( to )/g, ' til ')
 
@@ -1197,7 +1198,7 @@ router.post("/en-cl/translate", async (req, res) => {
                 if (tense == "future") word = conjTable.data.request.word;
     
                 finalText = finalText.replace("e " + original, word); // replace "is verb" (eng present tense) with "verb"
-                finalText = finalText.replace("til " + original, " þå " + word);
+                finalText = finalText.replace("til " + original, " å " + word);
 
                 preAccusative.push(i);
             }
