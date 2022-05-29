@@ -46,6 +46,10 @@ app.get("/learn/alphabet", function (req, res) {
   res.render("learn/alphabet", { pageTitle: "Alphabet • Learn Cloudic" });
 });
 
+app.get("/translate", function (req, res) {
+  res.render("tools/translate", { pageTitle: "Translate" });
+});
+
 app.use("/cdn", express.static("content"));
 app.use("/cdn/bootstrap", express.static("node_modules/bootstrap/dist"));
 
