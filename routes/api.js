@@ -406,7 +406,7 @@ router.get("/cl/tts", async (req, res) => {
         "Engine": "standard",
         "Text": `<speak><phoneme alphabet="ipa" ph="${(await orthographyToIpa(req.query.text)).latin}"></phoneme></speak>`,
         "OutputFormat": "mp3",
-        "VoiceId": "Karl", // Astrid
+        "VoiceId": "Astrid", // Karl
         "TextType": "ssml"
     };
 
