@@ -1228,6 +1228,8 @@ router.post("/en-cl/translate", async (req, res) => {
                             if (rows[0].en_past == original) tense = "past";
                             if (rows[0].en_pres == original) tense = "present";
                             if (rows[0].en_futu == original) tense = "future";
+
+                            if (rows[0].en_futu == original && (cTA[i - 1] == "i" || cTA[i - 1] == "you" || cTA[i - 1] == "he" || cTA[i - 1] == "she" || cTA[i - 1] == "we" || cTA[i - 1] == "yall" || cTA[i - 1] == "they")) tense = "present";
             
                             resolve(rows[0].cl_pres);
             
