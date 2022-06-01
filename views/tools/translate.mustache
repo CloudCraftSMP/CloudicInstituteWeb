@@ -5,15 +5,45 @@
 
     <div class="col-md-8 col-sm-12">
 
-        <h1>Atḷfabét • Атӆфабэйт<br><span style="font-weight: 100;">The Alphabet</span></h1>
-        <p class="larger">Cloudic has both a Latin and Cyrillic alphabet. The language is the same in both alphabets, although it may sound a little
-            different and is transcribed differently. This may be confusing if you're new to the language, or if you are not used to reading Cyrillic.
-        </p>
-        <p class="larger">If you're not sure which one to learn first, you should learn the Latin alphabet. However, it is still good to have knowledge
-            of Cyrillic Cloudic - in places, it could be more common to see than Latin.
-        </p>
+        <h1>Övorsätt • Ӧвошят<br><span style="font-weight: 100;">Translate</span></h1>
+
+        <div class="container" id="main" style="width: 150%">
+          <div class="row">
+              <div class="col-6">
+                <div class="form-floating">
+                    <textarea class="form-control" placeholder="d" id="englishText" style="height: 120px; resize: none;"></textarea>
+                    <label for="englishText">English</label>
+                    <a href="#"><i class="bi-arrow-left-right float-end" style="font-size: 1.6rem; color: #b0b0b0;"></i></a>
+                    <a href="#" id="dialectButton"><i id="dialectIcon" class="bi-diamond float-end" style="font-size: 1.6rem; color: #b0b0b0;"></i></a>
+                  </div>
+          </div>
+          <div class="col-6">
+            <div class="form-floating" id="latin">
+                <textarea class="form-control" placeholder="d" id="cloudicText" style="height: 120px; resize: none;"></textarea>
+                <label for="cloudicText" id="cloudicTextLabel">Cloudic</label>
+
+                <textarea class="form-control" placeholder="d" id="cloudicIpa" style="height: 120px; resize: none;" hidden></textarea>
+                <label for="cloudicIpa" id="cloudicIpaLabel" hidden>Cloudic (IPA)</label>
+
+                <a href="#" id="copyButton"><i class="bi-clipboard float-end" style="font-size: 1.6rem; color: #b0b0b0;"></i></a>
+                <a href="#" id="speakerButton"><i class="bi-speaker float-end" style="font-size: 1.6rem; color: #b0b0b0;"></i></a>
+                <a href="#" id="ipaButton"><i id="ipaIcon" class="bi-earbuds" style="font-size: 1.6rem; color: #b0b0b0; margin-left: 15px;"></i></a>
+            </div>
+            <div class="form-floating" id="cyrillic" hidden>
+                <textarea class="form-control" placeholder="d" id="cloudicCText" style="height: 120px; resize: none;"></textarea>
+                <label for="cloudicCText" id="cloudicCTextLabel">Cyrillic Cloudic</label>
+
+                <textarea class="form-control" placeholder="d" id="cloudicCIpa" style="height: 120px; resize: none;" hidden></textarea>
+                <label for="cloudicCIpa" id="cloudicCIpaLabel" hidden>Cyrillic Cloudic (IPA)</label>
+
+                <a href="#" id="copyCButton"><i class="bi-clipboard float-end" style="font-size: 1.6rem; color: #b0b0b0;"></i></a>
+                <a href="#" id="speakerCButton"><i class="bi-speaker float-end" style="font-size: 1.6rem; color: #b0b0b0;"></i></a>
+                <a href="#" id="ipaCButton"><i id="ipaCIcon" class="bi-earbuds" style="font-size: 1.6rem; color: #b0b0b0; margin-left: 15px;"></i></a>
+            </div>
 
     </div>
+
+        </div></div>
 
 </div>
 </div>

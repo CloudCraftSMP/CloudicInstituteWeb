@@ -1325,4 +1325,6 @@ router.post("/en-cl/translate", async (req, res) => {
     }})
 });
 
+router.get("/cl/transliterate/:text");
+
 module.exports = router;
