@@ -878,7 +878,7 @@ router.post("/cl/decline", async (req, res) => {
     }
 
     if (req.body.type == "ver") {
-        if (word[word.length - 1] != 'a') return res.status(400).send({"error": `${word} is not a valid infinitive verb. Check it ends in 'a', and try again.`});
+        if (!(word[word.length - 1] == 'a' || word[word.length - 1] == 'å')) return res.status(400).send({"error": `${word} is not a valid infinitive verb. Check it ends in 'a', and try again.`});
         if (!req.body.tense) return res.status(400).send({"error": `You must specify the 'tense' parameter, with one of the following values: 'past', 'present', 'future'.`});
         // calculate infinitive
         final.infinitive = {
