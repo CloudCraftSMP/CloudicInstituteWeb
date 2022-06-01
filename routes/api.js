@@ -200,15 +200,65 @@ async function ipaToOrthography(ipa) {
     });
 }
 
+async function filter(arr, callback) {
+
+    try {
+    const fail = Symbol()
+    return (await Promise.all(arr.map(async (element, item, arr) => (await callback(element, item, arr)) ? element : fail))).filter(element=>element!==fail)
+    } catch (e) {return null};
+  }
+
 async function orthographyToIpa(text) {
     return new Promise(async (resolve, reject) => {
+
+        const syllableRegex = /[^aäáæeéiíoöóœuúy]*[aäáæeéiíoöóœuúy]+(?:[^aäáæeéiíoöóœuúy]*$|[^aäáæeéiíoöóœuúy](?=[^aäáæeéiíoöóœuúy]))?/gi;
+
+        function syllabify(word) {
+            return word.match(syllableRegex);
+        }
+
+        var doneWords = [];
+
+        var words = text.split(" ");
+
+        for (iw in words) {
+            var word = words[iw];
+
+            var syllables = [];
+        if (syllabify(word) == null) syllables.push(word);
+        syllables = syllabify(word);
+
+        console.log("syl for " + word + " is " + syllables);
+
+        var temp = "";
+
+        var ipaSyll = await filter(syllables, async (element, i, a) => {
+            if (i % 2 === 0) { // if even (0, 2, 4)
+                //a[i] = "ˈ" + a[i];
+                temp += "ˈ" + a[i].replace(/á/g, "ɑu̯");
+                console.log("even " + a[i]);
+            } else { // if odd (1, 3, 40)
+                //a[i] = "ˌ" + a[i];
+                temp += "ˌ" + a[i].replace(/á/g, "ɑu̯");
+                console.log("odd " + a[i]);
+            }
+            return true;
+        }).then(ipas => {
+
+            doneWords.push(temp); //ipas
+
+        });
+
+        }
+
+        text = doneWords.join(" ");
 
         text = text.replaceAll('hj', 'ç');
         text = text.replaceAll('rs', 'ʂ');
         text = text.replaceAll('rd', 'ɖ');
         text = text.replaceAll('cj', 'cʰ');
 
-        text = text.replaceAll('tt', 'tl');
+        //text = text.replaceAll('tt', 'tl');
 
         text = text.replaceAll('gg', 'k');
 
@@ -228,6 +278,7 @@ async function orthographyToIpa(text) {
         text = text.replaceAll('j', 'j');
         text = text.replaceAll(' k', ' ɕ');
         text = text.replaceAll('kj', 'ɕ');
+        text = text.replaceAll('ll', 'tl');
         text = text.replaceAll('l', 'l');
         text = text.replaceAll('ḷ', 'l̥');
         text = text.replaceAll('m', 'm');
@@ -253,6 +304,8 @@ async function orthographyToIpa(text) {
         text = text.replaceAll('é', 'ei');
         text = text.replaceAll('ó', 'ouː');
         text = text.replaceAll('ó', 'ou');
+
+        text = text.replaceAll('ɑʏ̯', 'au')
 
         text = text.replaceAll('\u0303', 'ː');
 
@@ -360,7 +413,9 @@ router.get("/cl/tts", async (req, res) => {
     Polly.synthesizeSpeech(params, (err, data) => {
         if (err) return res.status(500).send(err);
         if (data.AudioStream instanceof Buffer) {
-            res.send(Buffer.from(data.AudioStream, 'binary'));
+            if (req.query.file != "true") {
+                res.send(Buffer.from(data.AudioStream, 'binary').toString('base64'));
+            } else res.send(Buffer.from(data.AudioStream, 'binary'));
         }
     });
 
@@ -1100,6 +1155,7 @@ router.post("/en-cl/translate", async (req, res) => {
                                                         .replace(/( will )/g, ' mun ')
                                                         .replace(/( not )/g, ' ekki ')
                                                         .replace(/( to )/g, ' til ')
+                                                        .replace(/( from )/g, ' frá ')
 
     const json = await csv()
     .fromStream(require("fs").createReadStream("sampa_ipa_single.csv"));
@@ -1118,6 +1174,7 @@ router.post("/en-cl/translate", async (req, res) => {
             if (original == "of" && cTA[i - 1] == "out") return finalText = finalText.replaceAll('out of', 'frá');
 
             if (original == "of") return finalText = finalText.replaceAll('of', 'að');
+            if (original == "from") return finalText = finalText.replaceAll('from', 'frá');
     
             // prepositions
             if (original == "and") return finalText = finalText.replaceAll(original, 'og');
