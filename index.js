@@ -3,6 +3,8 @@ const config = require("./config.json");
 //const mysql = require("mysql");
 //const con = mysql.createConnection(config.database);
 
+var cors = require('cors')
+
 const express = require("express");
 const app = express();
 
@@ -16,6 +18,12 @@ app.set("view engine", "mustache");
 app.engine("mustache", mustacheExpress());
 
 app.use(express.json());
+app.use(cors(corsOptions));
+
+var corsOptions = {
+  origin: 'http://localhost',
+  optionsSuccessStatus: 200
+}
 
 const transporter = nodemailer.createTransport({
     host: "smtp.sendgrid.net",
